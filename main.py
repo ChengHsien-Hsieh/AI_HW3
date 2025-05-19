@@ -81,12 +81,10 @@ ADJ_EXTRACTOR = build_agent(
                     
     Output format:
     {{
-        "adjectives": {{
-            1: {{"food": ["average"], "service": ["incredible"]}},
-            2: {{"food": [...], "service": [...]}},
-            ...
-            n: {{"food": ["..."], "service": ["..."]}}
-        }}
+        1: {{"food": "average", "service": "incredible", "review": "..."}},
+        2: {{"food": ..., "service": ..., "review": "..."}},
+        ...
+        n: {{"food": ..., "service": ..., "review": "..."}}
     }}
 
     If a review has no adjectives for food or service, return empty lists for them.
@@ -99,16 +97,17 @@ ANALYZER = build_agent(
     textwrap.dedent(f"""\
     Input is :
     {{
-        1: {{"food": ["average"], "service": ["incredible"]}},
-        2: {{"food": [...], "service": [...]}},
+        1: {{"food": ["average"], "service": ["incredible"], "review": "..."}},
+        2: {{"food": [...], "service": [...], "review": "..."}},
         ...
-        n: {{"food": ["..."], "service": ["..."]}}
+        n: {{"food": ["..."], "service": ["..."], "review": "..."}}
     }}
-                    
+
+    There are two extracted adjectives from each review: one for food and one for service.
     Please score from 1 to 5 based on how positively or negatively the food or service is described.
     Scoring guide:
     {SCORE_KEYWORDS}
-    Do not rely solely on exact keywords. Consider synonyms and expressions.
+    Do not rely solely on exact keywords. Consider context, negation, sarcasm, and subtle sentiment indicators. Focus on the overall tone and intent of the sentence rather than specific keywords. Some reviews may use humor, exaggeration, or idioms - interpret them appropriately.
     It is quite possible that the adjectives are not in the list. Please use your judgment to determine its meaning and score it.
 
     If the word in the review isn't exactly listed, estimate the score by semantic similarity:
@@ -212,9 +211,9 @@ def run_chat_sequence(entry: ConversableAgent, sequence: list[dict]) -> str:
                 except:
                     continue
         elif step["recipient"] is ADJ_EXTRACTOR:
-            ctx["adjective_output"] = out
+            ctx["adj_extractor_output"] = out
             out_dicts = ast.literal_eval(out)
-            ctx["adjectives"] = out_dicts["adjectives"]
+            ctx["adjectives_and_reviews"] = out_dicts
         # Analyzer output passed directly
         elif step["recipient"] is ANALYZER:
             ctx["analyzer_output"] = out
@@ -245,7 +244,7 @@ def main(user_query: str, data_path: str = "restaurant-data.txt"):
          "max_turns": 1},
 
         {"recipient": agents["analyzer"], 
-         "message": "Here are the extracted adjectives from the reviews:\n{adjectives}\n\nExtract exactly one food score and one service score for each review.", 
+         "message": "Here are the extracted adjectives from the reviews:\n{adjectives_and_reviews}\n\nExtract exactly one food score and one service score for each review.", 
          "summary_method": "last_msg", 
          "max_turns": 1},
 
