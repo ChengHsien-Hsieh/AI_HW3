@@ -96,7 +96,7 @@ ANALYZER = build_agent(
     ["adjective 1", "adjective 2", ..., "adjective n"]
 
     SCORE_KEYWORDS is the dict of already known keywords and their corresponding scores:                
-    The input adjectives scores are not in the dict, please determine a score for it from 1 to 5 using your judgment. 
+    The input adjectives are not in the dict, please determine a score for it from 1 to 5 using your judgment. 
 
     The general rules for estimating scores for unknown adjectives:
     - If the adjective is strongly negative → score 1
